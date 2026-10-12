@@ -1,0 +1,3 @@
+Portions derived from PicoSwitch2 by notsosaelin and contributors, Apache-2.0.
+https://github.com/notsosaelin/PicoSwitch2/tree/v2.5.0
+Adapted USB descriptors, initialization, factory data, firmware profile, pairing crypto and motion translation for Pico Swongle.

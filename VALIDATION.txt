@@ -1,0 +1,7 @@
+Pico Swongle validation — 2026-10-12
+
+Both personalities compiled for Pico 2 W / RP2350 ARM Secure with Pico SDK 2.3.1 and Arm GNU 14.3.Rel1. UF2 block magic and chip family checked. Picotool confirms name, version, target board, and image type.
+
+Host mapping, motion, haptics, rumble, original Switch USB, native Switch 2 USB, pairing crypto and upstream quaternion-carrier regressions passed with ASan and UBSan. Leak checking disabled only because this local environment uses ptrace. Native tests cover EP0 identification, report selection, C mapping, truncated commands, long memory replies with partial writes, motion enable/disable, held attitude after stale sensor input, and suspend/disconnect stops.
+
+Hardware: the previous Switch-personality firmware was confirmed working with DualSense on Switch 2 (inputs, motion, rumble). The new branded stable build is regression-tested. The user has now tested the native Switch 2 port on a Switch 2 console and confirmed that it works. Automated GitHub Actions builds have not been enabled; an optional workflow template is included.
