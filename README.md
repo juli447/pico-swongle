@@ -4,12 +4,12 @@ Turn a Raspberry Pi **Pico 2 W** into a Bluetooth controller adapter for your Ni
 
 ## Choose your firmware
 
-| Release | USB controller identity | Status | GameChat C button |
+| Download from release `v1.0.0` | USB controller identity | Status | GameChat C button |
 | --- | --- | --- | --- |
-| **Switch — `switch1-v1.0.0`** | Original Switch Pro Controller | Based on the firmware confirmed working with DualSense on Switch 2, including motion and rumble | No |
-| **Switch 2 — `switch2-v1.0.0-rc.1`** | Switch 2 Pro Controller | Tested on a Switch 2 console and confirmed working | PS4/PS5 touchpad **click** or Xbox **Share** |
+| **`pico-swongle-switch1-v1.0.0.uf2`** | Original Switch Pro Controller | Based on the firmware confirmed working with DualSense on Switch 2, including motion and rumble | No |
+| **`pico-swongle-switch2-v1.0.0.uf2`** | Switch 2 Pro Controller | Tested on a Switch 2 console and confirmed working | PS4/PS5 touchpad **click** or Xbox **Share** |
 
-The original Switch personality can also be used on Switch 2. The native Switch 2 personality is intended for Switch 2 only. Flash one UF2 at a time; the releases are alternative personalities for the same board.
+The original Switch personality can also be used on Switch 2. The native Switch 2 personality is intended for Switch 2 only. Flash one UF2 at a time; the two downloads are alternative personalities for the same board, included together in one stable release.
 
 Both variants support Home/Capture, Bluetooth reconnect, PS4/PS5 motion, and ordinary controller rumble. Xbox controllers without motion sensors cannot supply motion.
 

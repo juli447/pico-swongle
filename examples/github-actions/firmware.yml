@@ -2,7 +2,7 @@ name: Firmware
 on:
   push:
     branches: [main]
-    tags: ['switch1-v*', 'switch2-v*']
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -49,23 +49,21 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Publish matching personality
+      - name: Publish both firmware downloads
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           set -eu
-          case "$TAG" in
-            switch1-v1.0.0) personality=switch1; prerelease= ;;
-            switch2-v1.0.0-rc.1) personality=switch2; prerelease=--prerelease ;;
-            *) echo "Add reviewed release notes and version configuration before publishing a new tag"; exit 1 ;;
-          esac
+          test -f "releases/$TAG.md"
           mkdir -p dist
-          cp "artifacts/pico-swongle-$personality/pico-swongle-$personality.uf2" "dist/pico-swongle-$TAG.uf2"
+          for personality in switch1 switch2; do
+            cp "artifacts/pico-swongle-$personality/pico-swongle-$personality.uf2" "dist/pico-swongle-$personality-$TAG.uf2"
+          done
           git archive --format=zip --prefix=pico-swongle/ HEAD > "dist/pico-swongle-$TAG-source.zip"
           (cd dist && sha256sum *.uf2 *.zip > SHA256SUMS)
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release already published; keeping its verified assets."
           else
-            gh release create "$TAG" dist/* --verify-tag --title "Pico Swongle $TAG" --notes-file "releases/$TAG.md" $prerelease
+            gh release create "$TAG" dist/* --verify-tag --title "Pico Swongle $TAG" --notes-file "releases/$TAG.md"
           fi
