@@ -1,0 +1,6 @@
+Xiph Opus
+https://github.com/xiph/opus
+Commit: 2d862ea14b233e5a3f3afaf74d96050691af3cd5
+Version: v1.6.1-9-g2d862ea1
+Source contents are unmodified; CMake provides the snapshot version and relocates the linked codec archive to SRAM.
+See COPYING for license notices.

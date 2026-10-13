@@ -1,3 +1,6 @@
+#ifdef ADAPTER_SWITCH2_AUDIO
+#include "headphone_audio.h"
+#endif
 // SPDX-License-Identifier: Apache-2.0, MIT
 // Copyright 2019 Ricardo Quesada
 // 2021-2022 John "Nielk1" Klein
@@ -752,6 +755,14 @@ static ds5_instance_t* get_ds5_instance(uni_hid_device_t* d) {
 }
 
 static void ds5_send_output_report(uni_hid_device_t* d, ds5_output_report_t* out) {
+#ifdef ADAPTER_SWITCH2_AUDIO
+    if ((out->valid_flag0 & DS5_FLAG0_HAPTICS_SELECT) &&
+        headphone_audio_rumble(d,out->motor_right,out->motor_left)) return;
+    bool direct_lightbar = (out->valid_flag1 & DS5_FLAG1_LIGHTBAR_CONTROL_ENABLE) &&
+        headphone_audio_owns_lightbar(d);
+    if (direct_lightbar && !headphone_audio_lightbar_ready(d)) return;
+#endif
+
     ds5_instance_t* ins = get_ds5_instance(d);
 
     out->transaction_type = (HID_MESSAGE_TYPE_DATA << 4) | HID_REPORT_TYPE_OUTPUT;
@@ -760,12 +771,23 @@ static void ds5_send_output_report(uni_hid_device_t* d, ds5_output_report_t* out
 
     // Highest 4-bit is a sequence number, which needs to be increased every
     // report. Lowest 4-bit is tag and can be zero for now.
+#ifdef ADAPTER_SWITCH2_AUDIO
+    out->seq_tag = (ins->output_seq << 4);
+    ins->output_seq = (uint8_t)((ins->output_seq + 1u) & 15u);
+#else
     out->seq_tag = (ins->output_seq << 4) | 0x0;
     if (++ins->output_seq == 15)
         ins->output_seq = 0;
+#endif
 
     out->crc32 = ~uni_crc32_le(0xffffffff, (uint8_t*)out, sizeof(*out) - 4);
 
+#ifdef ADAPTER_SWITCH2_AUDIO
+    if (direct_lightbar) {
+        headphone_audio_queue_lightbar(d, (uint8_t*)out, sizeof(*out));
+        return;
+    }
+#endif
     uni_hid_device_send_intr_report(d, (uint8_t*)out, sizeof(*out));
 }
 
@@ -927,3 +949,12 @@ static void ds5_parse_mouse(uni_hid_device_t* d, const uint8_t* report, uint16_t
 
     uni_hid_device_process_controller(d);
 }
+
+#ifdef ADAPTER_SWITCH2_AUDIO
+uint8_t swongle_ds5_next_sequence(uni_hid_device_t *d) {
+    ds5_instance_t *ins=get_ds5_instance(d);
+    uint8_t seq=ins->output_seq;
+    ins->output_seq=(uint8_t)((seq+1)&15);
+    return seq;
+}
+#endif

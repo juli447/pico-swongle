@@ -1,3 +1,6 @@
+#ifdef ADAPTER_SWITCH2_AUDIO
+#include "headphone_audio.h"
+#endif
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2023 Ricardo Quesada
 // http://retro.moe/unijoysticle2
@@ -174,7 +177,12 @@ void uni_bt_bredr_setup(void) {
     l2cap_register_service(uni_bt_packet_handler, BLUETOOTH_PSM_HID_CONTROL, UNI_BT_L2CAP_CHANNEL_MTU, security_level);
 
     // Allow sniff mode requests by HID device and support role switch
+#ifdef ADAPTER_SWITCH2_AUDIO
+    // Continuous DualSense audio must not enter the slow HID sniff schedule.
+    gap_set_default_link_policy_settings(LM_LINK_POLICY_ENABLE_ROLE_SWITCH);
+#else
     gap_set_default_link_policy_settings(LM_LINK_POLICY_ENABLE_SNIFF_MODE | LM_LINK_POLICY_ENABLE_ROLE_SWITCH);
+#endif
 
     // Enable RSSI and EIR for gap_inquiry
     // TODO: Do we need EIR, since the name will be requested if not provided?
@@ -534,6 +542,10 @@ void uni_bt_bredr_on_l2cap_data_packet(uint16_t channel, const uint8_t* packet, 
         return;
     }
 
+#ifdef ADAPTER_SWITCH2_AUDIO
+    if (d->controller_type==CONTROLLER_TYPE_PS5Controller &&
+        !headphone_audio_input(d,packet+1,size-1)) return;
+#endif
     // Skip the first byte, which is always 0xa1
     uni_hid_parse_input_report(d, &packet[1], size - 1);
     uni_hid_device_process_controller(d);

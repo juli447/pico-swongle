@@ -11,3 +11,6 @@ bool switch_usb_is_mounted(void);
 bool switch_usb_has_any_reports(void);
 void switch_usb_set_motion(const uni_gamepad_t *gp);
 void switch_usb_stop_motion(void);
+
+// Native Switch 2 service, without re-entering the USB event dispatcher.
+void switch_usb_service_io(void);

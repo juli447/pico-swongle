@@ -42,3 +42,7 @@ for suite in ns2_pairing_crypto ns2_ds5_motion; do
         third_party/picoswitch2/ns2_motion_pdu.c -lm -o "$test_dir/$suite"
     "$test_dir/$suite"
 done
+
+gcc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc \
+    tests/test_controller_rgb.c src/controller_rgb.c -o "$test_dir/rgb"
+"$test_dir/rgb"

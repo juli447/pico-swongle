@@ -1,3 +1,5 @@
 Portions derived from PicoSwitch2 by notsosaelin and contributors, Apache-2.0.
 https://github.com/notsosaelin/PicoSwitch2/tree/v2.5.0
 Adapted USB descriptors, initialization, factory data, firmware profile, pairing crypto and motion translation for Pico Swongle.
+
+Audio additions adapt UAC1 endpoint/control handling, DualSense audio packet packing, resampling, headset state and RAM memory primitives from the same v2.5.0 source. Bluetooth stack integration, codec scheduling and lifecycle were changed for Bluepad32.

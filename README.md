@@ -2,16 +2,28 @@
 
 Turn a Raspberry Pi **Pico 2 W** into a Bluetooth controller adapter for your Nintendo Switch dock. Pair a PS4, PS5, or supported Bluetooth Xbox controller; connect the Pico to the dock with a USB data cable.
 
+[Download v1.1.0](https://github.com/juli447/pico-swongle/releases/tag/v1.1.0) · [Changelog](CHANGELOG.md)
+
 ## Choose your firmware
 
-| Download from release `v1.0.0` | USB controller identity | Status | GameChat C button |
+Both downloads are included in the same stable **v1.1.0** release. Flash one UF2 at a time.
+
+| Download | USB controller identity | C/GameChat | DualSense audio |
 | --- | --- | --- | --- |
-| **`pico-swongle-switch1-v1.0.0.uf2`** | Original Switch Pro Controller | Based on the firmware confirmed working with DualSense on Switch 2, including motion and rumble | No |
-| **`pico-swongle-switch2-v1.0.0.uf2`** | Switch 2 Pro Controller | Tested on a Switch 2 console and confirmed working | PS4/PS5 touchpad **click** or Xbox **Share** |
+| `pico-swongle-switch1-v1.1.0.uf2` | Original Switch Pro Controller | No | No |
+| `pico-swongle-switch2-v1.1.0.uf2` | Switch 2 Pro Controller | PS4/PS5 touchpad click or Xbox Share | Headphones and internal speaker |
 
-The original Switch personality can also be used on Switch 2. The native Switch 2 personality is intended for Switch 2 only. Flash one UF2 at a time; the two downloads are alternative personalities for the same board, included together in one stable release.
+The original Switch personality can also be used on Switch 2. The native Switch 2 personality is intended for Switch 2 only. Both support Home/Capture, Bluetooth reconnect, PS4/PS5 motion, rumble and a smooth PS4/PS5 RGB lightbar. Xbox controllers without motion sensors cannot supply motion.
 
-Both variants support Home/Capture, Bluetooth reconnect, PS4/PS5 motion, and ordinary controller rumble. Xbox controllers without motion sensors cannot supply motion.
+## Smooth RGB lightbar
+
+The PS4/PS5 lightbar starts with a smooth rainbow animation. **Hold the touchpad down, then press PS** to toggle RGB on/off. Disabled means the lightbar is dark. Hold the combination to toggle once; release both buttons before toggling again. Home works normally on its own, including long holds. The recognized RGB combination suppresses Home until both buttons are released.
+
+## DualSense audio on Switch 2
+
+Plug headphones into your Bluetooth-connected PS5 controller to hear the console's USB audio. **Headphones always take priority.** Without headphones, **Touchpad click + Mute** toggles normal console audio and the internal DualSense speaker. Removing headphones restores the previous no-headphone output selection. A controller reconnect resets the selection to normal console output.
+
+Audio playback, speaker switching, RGB and the final Home shortcut behaviour were tested by the user on Switch 2 with a DualSense. USB receive handling prevents the rare audio gaps found during development, without the extra latency of the discarded large buffer. RGB traffic gives audio priority. Headset microphone forwarding is not included. See [audio setup and build options](docs/headphone-audio.md).
 
 ## Flash and pair
 
@@ -39,11 +51,13 @@ Face buttons follow their physical Switch positions:
 | North | Triangle | Y | X |
 
 - Options/Menu → **Plus**; Share/Create/View → **Minus**.
-- PS/Xbox → **Home**.
+- PS/Xbox → **Home**, including long holds.
 - PS/Xbox + Share/Create/View → **Capture**.
-- DualSense Mute → **Capture**.
+- DualSense Mute → **Capture**, except while used in the local audio shortcut.
 - **Native Switch 2 build:** touchpad click → **C/GameChat**; Xbox Share → **C/GameChat**. The touch surface is not used, and PS5 Create remains Minus.
-- **Original Switch build:** Xbox Share → **Capture**; touchpad click is unused.
+- **Original Switch build:** Xbox Share → **Capture**; touchpad click has no console mapping but can toggle RGB with PS.
+- **PS4/PS5 local shortcut:** hold touchpad, then press PS → **RGB on/off**.
+- **Switch 2 + DualSense local shortcut:** Touchpad + Mute → **console/internal speaker audio** when no headphones are inserted.
 
 Bluetooth Xbox support depends on controller model and firmware; a newer controller with a Share button is required for the Xbox C mapping. Xbox 360 and Xbox One models without Bluetooth cannot pair. DInput/XInput are PC APIs: Bluetooth input here uses Bluepad32's controller-specific parsers; the USB output uses Nintendo's controller protocol.
 
@@ -64,7 +78,7 @@ A solid LED confirms transport activity; the console must also accept and assign
 
 ## Scope
 
-One controller per Pico. USB controller input, proprietary Xbox wireless/2.4 GHz receivers, NFC/amiibo, GL/GR grip buttons, adaptive triggers, controller headset/audio, and console wake from sleep are not implemented. Rumble translates amplitudes to conventional controller motors; it does not reproduce exact Nintendo HD Rumble waveforms.
+One controller per Pico. USB controller input, proprietary Xbox wireless/2.4 GHz receivers, NFC/amiibo, GL/GR grip buttons, adaptive triggers, headset microphone forwarding, PS4/Xbox headset audio, and console wake from sleep are not implemented. DualSense playback is available only in the native Switch 2 firmware. Rumble translates amplitudes to conventional controller motors; it does not reproduce exact Nintendo HD Rumble waveforms.
 
 ## Build
 
@@ -81,7 +95,9 @@ cmake --build build-switch2 --parallel 4
 
 Each build directory contains `pico2w_switch_adapter.uf2`. This project targets **Pico 2 W / RP2350 ARM**, not Pico W/RP2040. CMake may fetch picotool. Local builds were verified with Pico SDK 2.3.1 and Arm GNU 14.3.Rel1.
 
-Run `sh tests/run_tests.sh` with GCC/G++ on Linux. Tests exercise mapping, motion, haptics, USB handshakes, malformed packets, native C mapping, pairing crypto, calibration reads, and disconnect/suspend handling. Both modes have also been tested on a Switch 2 console. An optional GitHub Actions template is included at `examples/github-actions/firmware.yml`. Copy it to `.github/workflows/firmware.yml` to enable builds for both personalities and tag-based releases; it is not enabled by default.
+The audio-enabled Switch 2 build uses a 300 MHz CPU clock and 1.20 V core voltage, matching the tested reference configuration. This exceeds the board’s standard CPU clock. To omit audio, add `-DSWONGLE_HEADPHONE_AUDIO=OFF`. Audio diagnostics and the test tone are disabled by default.
+
+Run `sh tests/run_tests.sh` with GCC/G++ on Linux. Tests exercise mapping, motion, haptics, USB handshakes, malformed packets, native C mapping, pairing crypto, calibration reads, and disconnect/suspend handling. Both USB personalities have been tested on Switch 2; the new audio and RGB shortcut behaviour was confirmed with a DualSense in the native Switch 2 personality. PS4 RGB uses Bluepad32’s existing lightbar support; no separate PS4 console test was reported. For audio/codec/UAC tests, run `PICO_SDK_PATH=/absolute/path/to/pico-sdk sh tests/run_audio_tests.sh`. An optional GitHub Actions template is included at `examples/github-actions/firmware.yml`. Copy it to `.github/workflows/firmware.yml` to enable builds for both personalities and tag-based releases; it is not enabled by default.
 
 ## Credits and licenses
 
@@ -89,6 +105,7 @@ Run `sh tests/run_tests.sh` with GCC/G++ on Linux. Tests exercise mapping, motio
 - [Bluepad32](https://github.com/ricardoquesada/bluepad32), Apache-2.0: Bluetooth controller support. Snapshot `80d6314e46f871719fbb4b721a2cc02227c4f369`; local fixes include touchpad click forwarding, calibrated motion, and Pico SDK compatibility.
 - [switch-pico](https://github.com/jyapayne/switch-pico), MIT: Switch motion packing and haptics decoder. Snapshot `7449d6d029a0d3aa1ff1ce80d524a8f7b1e08ba8`.
 - [PicoSwitch2](https://github.com/notsosaelin/PicoSwitch2), Apache-2.0: native Switch 2 protocol, pairing crypto, firmware profile, and motion translation. USB descriptor/factory reference v1.5.0; pure helpers v2.5.0 (`cdb5bf6f85cef9998c11da280073a0c7642b712c`). Local changes include USB lifecycle integration, bounded/queued replies, synthetic stick calibration, and defined signed arithmetic.
+- [Opus](https://github.com/xiph/opus), BSD-style: CELT audio codec, pinned to `2d862ea14b233e5a3f3afaf74d96050691af3cd5` (`v1.6.1-9-g2d862ea1`). Notices are retained in `third_party/opus/COPYING` and `licenses/opus.txt`.
 - [Raspberry Pi Pico SDK](https://github.com/raspberrypi/pico-sdk) 2.3.1 and its dependencies: bundled binary notices are in `licenses/`.
 
 New adapter code is MIT; the adapted native Switch 2 backend and PicoSwitch2 helpers are Apache-2.0. Retain the included third-party licenses and notices when distributing source or firmware. This is an independent project, unaffiliated with Nintendo, Sony, Microsoft, Raspberry Pi, or 8BitDo.

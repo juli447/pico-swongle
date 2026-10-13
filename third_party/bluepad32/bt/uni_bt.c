@@ -1,3 +1,6 @@
+#ifdef ADAPTER_SWITCH2_AUDIO
+#include "headphone_audio.h"
+#endif
 /*
  * Copyright (C) 2017 BlueKitchen GmbH
  *
@@ -330,6 +333,14 @@ void uni_bt_enable_service_safe(bool enabled) {
 }
 
 void uni_bt_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t* packet, uint16_t size) {
+#ifdef ADAPTER_SWITCH2_AUDIO
+    // A receive batch may outlast the eight-SOF USB receive transfer. Service
+    // USB between incoming HID packets instead of only after the radio drain.
+    // Do not dispatch USB from CAN_SEND_NOW or synchronous TX callbacks.
+    if (packet_type == L2CAP_DATA_PACKET)
+        headphone_audio_service_usb();
+#endif
+
     uint8_t event;
     uni_hid_device_t* device;
     uint8_t status;
@@ -476,6 +487,9 @@ void uni_bt_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t* packe
                     if (device == NULL) {
                         loge("--->>> CANNOT FIND DEVICE");
                     } else {
+#ifdef ADAPTER_SWITCH2_AUDIO
+                        headphone_audio_can_send_now(local_cid);
+#endif
                         uni_hid_device_send_queued_reports(device);
                     }
                     break;
