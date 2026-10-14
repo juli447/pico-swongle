@@ -78,7 +78,7 @@ A solid LED confirms transport activity; the console must also accept and assign
 
 ## Scope
 
-One controller per Pico. Proprietary Xbox wireless/2.4 GHz receivers, NFC/amiibo(due to lack of NFC on every Controller that is targeted), GL/GR grip buttons (Due to lack of Physical Buttons and me not owning a Dualsense Edge) and console wake from sleep are not implemented. Rumble translates amplitudes to conventional controller motors; it does not reproduce exact Nintendo HD Rumble waveforms.
+One controller per Pico. Proprietary Xbox wireless/2.4 GHz receivers, NFC/amiibo(due to lack of NFC on every Controller that is targeted) and GL/GR grip buttons (Due to lack of Physical Buttons and me not owning a Dualsense Edge) are not implemented. Rumble translates amplitudes to conventional controller motors; it does not reproduce exact Nintendo HD Rumble waveforms.
 
 ## Build
 
